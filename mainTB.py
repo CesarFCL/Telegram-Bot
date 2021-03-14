@@ -714,7 +714,6 @@ def main():
     # Start Bot
     updater.start_polling()
 
-    # Finalizar bot con Ctrl+C
     updater.idle()
 
 
