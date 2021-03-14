@@ -1,4 +1,5 @@
 import logging
+from selenium import webdriver
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 # Configurar loggin
@@ -33,7 +34,72 @@ def help_command(update, context):
 
 #comando list
 def list_command(update, context):
-    update.message.reply_text('Aun no configurado')
+    CPaises = ['GYE', 'UIO', 'GRU', 'BOG', 'SCL', 'LIM', 'CGH', 'GIG', 'AEP', 'MEX', 'LAX', 'JFK', 'DUB', 'FRA', 'HKG',
+               'YYZ', 'MIA', 'MAD', 'BCN', 'SJO', 'PTY', 'BAQ', 'MVD', 'BQN', 'HND', 'AMS', 'ORY', 'SYD']
+    CPaises2 = CPaises
+    driver = webdriver.Chrome('./chromedriver.exe')
+    update.message.reply_text('La busqueda de vuelos esta en proceso.\n'
+                              'Este proceso puede tardar unos segundos'
+                              ' debido a que las busquedas se realizan en tiempo'
+                              ' real.\n'
+                              'En cuanto se acabe de realizar el listado'
+                              ' se le notificara con un mensaje.\n'
+                              'Porfavor sea paciente')
+    for j in CPaises:
+        for k in CPaises2:
+            driver.get(f'https://www.despegar.com.ec/vuelos/{j}/{k}/')
+
+            vuelos = driver.find_elements_by_class_name('reduced-cluster.margin-bottom-reduced-cluster')
+
+            listprecio = list()
+
+            info = driver.find_element_by_class_name('ux-common-results-title').text
+
+            for vuelo in vuelos:
+                precio = vuelo.find_element_by_class_name('pricebox-big-text.price').text
+                listprecio.append(precio)
+                # listprecio.append(precio)
+
+            # print("Precio de los vuelos:")
+            # print(listprecio)
+
+            listida = list()
+
+            for vuelo in vuelos:
+                ida = vuelo.find_elements_by_class_name('cluster-part-0')
+                for i in ida:
+                    listida.append(i.text)
+
+            listreg = list()
+
+            for vuelo in vuelos:
+                reg = vuelo.find_elements_by_class_name('cluster-part-1')
+                for i in reg:
+                    listreg.append(i.text)
+                # print(reg)
+
+            aux = 0
+            for i in listida:
+                listida[aux] = i.replace("\n-", " - ").replace("\n", " - ").replace("  ", " ").replace("- -", "-")
+                aux = aux + 1
+
+            aux = 0
+            for i in listreg:
+                listreg[aux] = i.replace("\n-", " - ").replace("\n", " - ").replace("  ", " ").replace("- -", "-")
+                aux = aux + 1
+
+            listidavuelta = zip(listida, listreg, listprecio)
+            listidavuelta = tuple(listidavuelta)
+
+            print(info)
+            numeracion = 1
+            for i in range(len(listidavuelta)):
+                update.message.reply_text(str(numeracion) + '\n' +
+                                          str(info) + '\n' +
+                                          str(listidavuelta[i][0]) + '\n' +
+                                          str(listidavuelta[i][1]) + '\n' +
+                                          'Precio: ' + str(listidavuelta[i][2]) + ' $\n')
+                numeracion = numeracion + 1
 
 #comando brt_ticket
 def BUYRT_TICKET_command(update, context):
